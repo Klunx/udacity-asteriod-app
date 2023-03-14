@@ -2,7 +2,6 @@ package com.udacity.asteroidradar.common.database
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.udacity.asteroidradar.pictureoftheday.domain.model.PictureOfDay
 
 @Entity(tableName = "picture_of_the_day")
 class DatabasePictureOfDay constructor(
@@ -12,18 +11,15 @@ class DatabasePictureOfDay constructor(
     val mediaType: String
 )
 
-fun DatabasePictureOfDay.toDomainModel(): PictureOfDay {
-    return PictureOfDay(
-        mediaType = mediaType,
-        title = title,
-        url = url
-    )
-}
-
-fun PictureOfDay.toDatabaseModel(): DatabasePictureOfDay {
-    return DatabasePictureOfDay(
-        mediaType = mediaType,
-        title = title,
-        url = url
-    )
-}
+@Entity(tableName = "asteroid")
+class DatabaseAsteroid constructor(
+    @PrimaryKey
+    val id: Long,
+    val codename: String,
+    val closeApproachDate: String,
+    val absoluteMagnitude: Double,
+    val estimatedDiameter: Double,
+    val relativeVelocity: Double,
+    val distanceFromEarth: Double,
+    val isPotentiallyHazardous: Boolean
+)
