@@ -16,7 +16,7 @@
 
     <fragment
         android:id="@+id/detailFragment"
-        android:name="com.udacity.asteroidradar.detail.DetailFragment"
+        android:name="com.udacity.asteroidradar.detail.view.DetailFragment"
         android:label="fragment_detail"
         tools:layout="@layout/fragment_detail">
 
