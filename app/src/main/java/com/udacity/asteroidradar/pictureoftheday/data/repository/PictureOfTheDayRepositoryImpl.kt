@@ -3,8 +3,8 @@ package com.udacity.asteroidradar.pictureoftheday.data.repository
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Transformations
 import com.udacity.asteroidradar.common.database.NasaDatabase
-import com.udacity.asteroidradar.common.database.toDatabaseModel
-import com.udacity.asteroidradar.common.database.toDomainModel
+import com.udacity.asteroidradar.common.database.mapper.toDatabaseModel
+import com.udacity.asteroidradar.common.database.mapper.toDomainModel
 import com.udacity.asteroidradar.common.network.NasaApiService
 import com.udacity.asteroidradar.pictureoftheday.data.model.mapper.toDomainModel
 import com.udacity.asteroidradar.pictureoftheday.domain.model.PictureOfDay
@@ -19,7 +19,7 @@ class PictureOfTheDayRepositoryImpl(
 
     private val apiKey = "njunRLyfKbrdac47JO9rJnf6boN1S7dWF9BQXjDq"
     val pictureOfTheDay: LiveData<PictureOfDay> = Transformations.map(database.nasaDao.getPictureOfTheDay()) { databasePictureOfTheDay ->
-        databasePictureOfTheDay.let {
+        databasePictureOfTheDay?.let {
             it.toDomainModel()
         }
     }
