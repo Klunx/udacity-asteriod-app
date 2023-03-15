@@ -16,8 +16,10 @@ import kotlinx.coroutines.launch
 class MainViewModel(application: Application) : ViewModel() {
 
     private val database = getDatabase(application)
-    private val pictureOfTheDayRepository = PictureOfTheDayRepositoryImpl(database, NasaApi.retrofitService)
-    private val asteroidListRepository = AsteroidListRepositoryImpl(database)
+    private val nasaApiService = NasaApi.retrofitService
+
+    private val pictureOfTheDayRepository = PictureOfTheDayRepositoryImpl(database, nasaApiService)
+    private val asteroidListRepository = AsteroidListRepositoryImpl(database, nasaApiService)
 
     val pictureOfTheDay = pictureOfTheDayRepository.pictureOfTheDay
     val listOfAsteroids = asteroidListRepository.listOfAsteroids
