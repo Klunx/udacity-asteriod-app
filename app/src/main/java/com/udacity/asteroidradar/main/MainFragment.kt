@@ -12,6 +12,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.udacity.asteroidradar.R
+import com.udacity.asteroidradar.asteroidlist.data.repository.AsteroidListFilter
 import com.udacity.asteroidradar.databinding.FragmentMainBinding
 import com.udacity.asteroidradar.main.view.AsteroidClickListener
 import com.udacity.asteroidradar.main.view.AsteroidListAdapter
@@ -36,7 +37,7 @@ class MainFragment : Fragment() {
 
         setHasOptionsMenu(true)
 
-        val adapter = AsteroidListAdapter( AsteroidClickListener {
+        val adapter = AsteroidListAdapter(AsteroidClickListener {
             viewModel.navigateToAsteroidDetails(it)
         })
 
@@ -57,6 +58,13 @@ class MainFragment : Fragment() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        viewModel.updateAsteroidList(
+            when (item.itemId) {
+                R.id.show_week_menu -> AsteroidListFilter.WEEK
+                R.id.show_today_menu -> AsteroidListFilter.TODAY
+                else -> AsteroidListFilter.SAVED
+            }
+        )
         return true
     }
 }

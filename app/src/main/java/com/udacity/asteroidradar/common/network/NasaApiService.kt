@@ -3,6 +3,7 @@ package com.udacity.asteroidradar.common.network
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import com.udacity.asteroidradar.Constants.BASE_URL
 import com.udacity.asteroidradar.pictureoftheday.data.model.DataPictureOfDay
 import retrofit2.Call
 import retrofit2.Retrofit
@@ -17,7 +18,6 @@ import retrofit2.http.Query
  *
  * https://stackoverflow.com/questions/37010835/moshi-retrofit-error-expected-a-string-but-was-begin-object
  */
-private const val BASE_URL = "https://api.nasa.gov/"
 
 private val moshi = Moshi.Builder()
     .add(KotlinJsonAdapterFactory())
