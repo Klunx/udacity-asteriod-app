@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Transformations
+import com.udacity.asteroidradar.Constants.API_KEY
 import com.udacity.asteroidradar.common.database.NasaDatabase
 import com.udacity.asteroidradar.common.database.mapper.toDatabaseModel
 import com.udacity.asteroidradar.common.database.mapper.toDomainModel
@@ -21,8 +22,7 @@ class PictureOfTheDayRepositoryImpl(
 
     private val TAG = "PictureOfTheDayRepository"
 
-    private val apiKey = "njunRLyfKbrdac47JO9rJnf6boN1S7dWF9BQXjDq"
-    val pictureOfTheDay: LiveData<PictureOfDay> = Transformations.map(database.nasaDao.getPictureOfTheDay()) { databasePictureOfTheDay ->
+    override val pictureOfTheDay: LiveData<PictureOfDay> = Transformations.map(database.nasaDao.getPictureOfTheDay()) { databasePictureOfTheDay ->
         databasePictureOfTheDay?.let {
             it.toDomainModel()
         }
@@ -32,7 +32,7 @@ class PictureOfTheDayRepositoryImpl(
     override suspend fun getPictureOfTheDay() {
         withContext(Dispatchers.IO) {
             try {
-                val response = nasaApiService.getPictureOfTheDay(apiKey).toDomainModel()
+                val response = nasaApiService.getPictureOfTheDay(API_KEY).toDomainModel()
                 database.nasaDao.clearPictureOfTheDay()
                 database.nasaDao.insertPictureOfTheDay(response.toDatabaseModel())
             } catch (e: Exception) {
