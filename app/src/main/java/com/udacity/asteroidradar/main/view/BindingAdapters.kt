@@ -21,14 +21,14 @@ fun ImageView.setPictureOfTheDay(data: PictureOfDay?) {
 @BindingAdapter("setDescriptionFromPictureOfTheDay")
 fun FrameLayout.setDescriptionFromPictureOfTheDay(data: PictureOfDay?) {
     data?.let {
-        contentDescription = it.title
+        contentDescription = String.format(context.getString(R.string.nasa_picture_of_day_content_description_format), it.title)
     }
 }
 
 @BindingAdapter("setTitlePictureOfTheDay")
 fun TextView.setTitlePictureOfTheDay(data: PictureOfDay?) {
     data?.let {
-        text = it.title
+        text = String.format(context.getString(R.string.nasa_picture_of_day_content_description_format), it.title)
     }
 }
 
@@ -42,10 +42,10 @@ fun bindRecyclerView(recyclerView: RecyclerView, data: List<Asteroid>?) {
 fun bindAsteroidStatusImage(imageView: ImageView, isHazardous: Boolean) {
     if (isHazardous) {
         imageView.setImageResource(R.drawable.ic_status_potentially_hazardous)
-        imageView.contentDescription = imageView.context.getString(R.string.asteroid_hazardous)
+        imageView.contentDescription = imageView.context.getString(R.string.potentially_hazardous_asteroid_image)
     } else {
         imageView.setImageResource(R.drawable.ic_status_normal)
-        imageView.contentDescription = imageView.context.getString(R.string.asteroid_safe)
+        imageView.contentDescription = imageView.context.getString(R.string.not_hazardous_asteroid_image)
     }
 }
 
@@ -53,10 +53,10 @@ fun bindAsteroidStatusImage(imageView: ImageView, isHazardous: Boolean) {
 fun bindDetailsStatusImage(imageView: ImageView, isHazardous: Boolean) {
     if (isHazardous) {
         imageView.setImageResource(R.drawable.asteroid_hazardous)
-        imageView.contentDescription = imageView.context.getString(R.string.asteroid_hazardous)
+        imageView.contentDescription = imageView.context.getString(R.string.potentially_hazardous_asteroid_image)
     } else {
         imageView.setImageResource(R.drawable.asteroid_safe)
-        imageView.contentDescription = imageView.context.getString(R.string.asteroid_safe)
+        imageView.contentDescription = imageView.context.getString(R.string.not_hazardous_asteroid_image)
     }
 }
 
