@@ -1,7 +1,9 @@
 package com.udacity.asteroidradar.main.view
 
+import android.view.View
 import android.widget.FrameLayout
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -36,6 +38,21 @@ fun TextView.setTitlePictureOfTheDay(data: PictureOfDay?) {
 fun bindRecyclerView(recyclerView: RecyclerView, data: List<Asteroid>?) {
     val adapter = recyclerView.adapter as AsteroidListAdapter
     adapter.submitList(data)
+}
+
+@BindingAdapter("nasaApiStatus")
+fun ProgressBar.bindStatus(status: NasaApiStatus) {
+    when (status) {
+        NasaApiStatus.LOADING -> {
+            visibility = View.VISIBLE
+        }
+        NasaApiStatus.ERROR -> {
+            visibility = View.VISIBLE
+        }
+        NasaApiStatus.DONE -> {
+            visibility = View.GONE
+        }
+    }
 }
 
 @BindingAdapter("statusIcon")

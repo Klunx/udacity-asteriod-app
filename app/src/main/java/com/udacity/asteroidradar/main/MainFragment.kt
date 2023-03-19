@@ -18,6 +18,7 @@ import com.udacity.asteroidradar.main.view.AsteroidClickListener
 import com.udacity.asteroidradar.main.view.AsteroidListAdapter
 import com.udacity.asteroidradar.main.view.MainViewModel
 import com.udacity.asteroidradar.main.view.MainViewModelFactory
+import com.udacity.asteroidradar.main.view.NasaApiStatus
 
 class MainFragment : Fragment() {
 

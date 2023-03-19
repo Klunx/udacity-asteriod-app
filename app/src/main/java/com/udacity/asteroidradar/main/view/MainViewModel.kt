@@ -16,6 +16,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.io.IOException
 
+enum class NasaApiStatus { LOADING, ERROR, DONE }
 class MainViewModel(application: Application) : ViewModel() {
 
     private val database = getDatabase(application)
@@ -36,6 +37,12 @@ class MainViewModel(application: Application) : ViewModel() {
     val navigateToAsteroid: LiveData<Asteroid>
         get() = _navigateToAsteroid
 
+    private val _status = MutableLiveData<NasaApiStatus>()
+
+    // The external immutable LiveData for the request status String
+    val status: LiveData<NasaApiStatus>
+        get() = _status
+
     init {
         viewModelScope.launch {
             pictureOfTheDayRepository.getPictureOfTheDay()
@@ -44,26 +51,32 @@ class MainViewModel(application: Application) : ViewModel() {
     }
 
     private fun initializeAsteroidList() {
+        displayImageOfTheDay()
+        onQueryChanged(AsteroidListFilter.SAVED)
+    }
+
+    private fun displayImageOfTheDay() {
         currentJob?.cancel()
         currentJob = viewModelScope.launch(Dispatchers.IO) {
             try {
                 asteroidListRepository.getListOfAsteroids()
-                onQueryChanged(AsteroidListFilter.SAVED)
             } catch (e: IOException) {
-
             }
         }
     }
 
     private fun onQueryChanged(filter: AsteroidListFilter) {
         currentJob?.cancel()
+        _status.value = NasaApiStatus.LOADING
         currentJob = viewModelScope.launch(Dispatchers.IO) {
             try {
                 // Using postValue as per suggested below
                 // https://stackoverflow.com/questions/53304347/mutablelivedata-cannot-invoke-setvalue-on-a-background-thread-from-coroutine
                 _listOfAsteroids.postValue(asteroidListRepository.getFilteredList(filter))
+                _status.postValue(NasaApiStatus.DONE)
             } catch (e: IOException) {
                 _listOfAsteroids.postValue(listOf())
+                _status.postValue(NasaApiStatus.DONE)
             }
         }
     }
