@@ -3,6 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!--
+    Added a second layout for when the phone is rotated.
+    I took this approach from here:
+    https://stackoverflow.com/questions/45687034/how-to-change-layout-when-rotate -->
     <data>
 
         <variable
@@ -17,9 +21,9 @@
 
         <FrameLayout
             android:id="@+id/activity_main_image_of_the_day_layout"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/space_size_x28"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_width="@dimen/space_size_x50"
+            android:layout_height="match_parent"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:setDescriptionFromPictureOfTheDay="@{viewModel.pictureOfTheDay}">
@@ -52,8 +56,8 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/activity_main_image_of_the_day_layout"
+            app:layout_constraintStart_toEndOf="@+id/activity_main_image_of_the_day_layout"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0.0"
             tools:listitem="@layout/list_item" />
 

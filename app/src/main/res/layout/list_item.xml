@@ -3,51 +3,51 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
+
         <variable
             name="asteroid"
             type="com.udacity.asteroidradar.asteroid.domain.model.Asteroid" />
 
         <variable
             name="clickListener"
-            type="com.udacity.asteroidradar.main.view.AsteroidClickListener"/>
+            type="com.udacity.asteroidradar.main.view.AsteroidClickListener" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="@dimen/space_size_x3"
-        android:onClick="@{() -> clickListener.onClick(asteroid)}">
+        android:onClick="@{() -> clickListener.onClick(asteroid)}"
+        android:padding="@dimen/space_size_x3">
 
         <TextView
             android:id="@+id/codename"
-            android:text="@{asteroid.codename}"
-            android:textColor="@android:color/white"
+            style="@style/TextAppearance.Body"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:contentDescription="@{asteroid.codename}"
+            android:text="@{asteroid.codename}"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/date"
-            android:text="@{asteroid.closeApproachDate}"
-            android:textColor="@android:color/white"
+            style="@style/TextAppearance.Body"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/codename"
+            android:contentDescription="@{asteroid.closeApproachDate}"
+            android:text="@{asteroid.closeApproachDate}"
             app:layout_constraintBottom_toBottomOf="parent"
-            />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/codename" />
 
         <ImageView
             android:id="@+id/proximity_hazard"
+            statusIcon="@{asteroid.potentiallyHazardous}"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            statusIcon="@{asteroid.potentiallyHazardous}"
-            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            />
+            app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
