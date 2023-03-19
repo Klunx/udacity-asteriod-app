@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <dimen name="space_size_half">4dp</dimen>
     <dimen name="space_size_x1">8dp</dimen>
     <dimen name="space_size_x2">16dp</dimen>
     <dimen name="space_size_x3">24dp</dimen>
-    <dimen name="space_size_x4">32dp</dimen>
+    <dimen name="space_size_x28">224dp</dimen>
+    <dimen name="space_size_x50">400dp</dimen>
+    <dimen name="title_size">18sp</dimen>
+    <dimen name="body_size">14sp</dimen>
 </resources>
