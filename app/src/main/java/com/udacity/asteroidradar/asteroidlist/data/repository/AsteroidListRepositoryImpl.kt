@@ -15,6 +15,8 @@ import com.udacity.asteroidradar.common.api.parseAsteroidsJsonResult
 import com.udacity.asteroidradar.common.database.NasaDatabase
 import com.udacity.asteroidradar.common.database.mapper.toDomainModel
 import com.udacity.asteroidradar.common.network.NasaApiService
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
@@ -38,24 +40,27 @@ class AsteroidListRepositoryImpl(
 
     override suspend fun getListOfAsteroids() {
         val nextSevenDaysFormattedDates = getNextSevenDaysFormattedDates()
-        nasaApiService.getListOfAsteroids(nextSevenDaysFormattedDates.first(), nextSevenDaysFormattedDates.last(), API_KEY)
-            .enqueue(object : Callback<String> {
-                override fun onResponse(call: Call<String>, response: Response<String>) {
-                    response.body()?.let {
-                        val listDataAsteroid = parseAsteroidsJsonResult(JSONObject(it)).toDomainModel()
-                        // Having issues saying this was running in the main thread I have sent it in another thread.
-                        Thread {
-                            database.nasaDao.clearAsteroid()
-                            database.nasaDao.insertAsteroids(listDataAsteroid.toDatabaseModel())
-                        }.start()
+        withContext(Dispatchers.IO) {
+            nasaApiService.getListOfAsteroids(nextSevenDaysFormattedDates.first(), nextSevenDaysFormattedDates.last(), API_KEY)
+                .enqueue(object : Callback<String> {
+                    override fun onResponse(call: Call<String>, response: Response<String>) {
+                        response.body()?.let {
+                            val listDataAsteroid = parseAsteroidsJsonResult(JSONObject(it)).toDomainModel()
+                            // Having issues saying this was running in the main thread I have sent it in another thread.
+                            Thread {
+                                database.nasaDao.clearAsteroid()
+                                database.nasaDao.insertAsteroids(listDataAsteroid.toDatabaseModel())
+                            }.start()
+                        }
                     }
-                }
 
-                @SuppressLint("LongLogTag")
-                override fun onFailure(call: Call<String>, t: Throwable) {
-                    t.message?.let { Log.e(TAG, it) }
-                }
-            })
+                    @SuppressLint("LongLogTag")
+                    override fun onFailure(call: Call<String>, t: Throwable) {
+                        t.message?.let { Log.e(TAG, it) }
+                    }
+                })
+
+        }
     }
 
     fun getFilteredList(filter: AsteroidListFilter): List<Asteroid> {

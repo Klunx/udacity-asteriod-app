@@ -13,6 +13,7 @@ import com.udacity.asteroidradar.common.network.NasaApi
 import com.udacity.asteroidradar.pictureoftheday.data.repository.PictureOfTheDayRepositoryImpl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.IOException
 
@@ -44,22 +45,27 @@ class MainViewModel(application: Application) : ViewModel() {
         get() = _status
 
     init {
-        viewModelScope.launch {
-            pictureOfTheDayRepository.getPictureOfTheDay()
-        }
+        _status.value = NasaApiStatus.LOADING
+        initializePictureOfTheDay()
         initializeAsteroidList()
     }
 
-    private fun initializeAsteroidList() {
-        displayImageOfTheDay()
-        onQueryChanged(AsteroidListFilter.SAVED)
+    private fun initializePictureOfTheDay() {
+        viewModelScope.launch {
+            pictureOfTheDayRepository.getPictureOfTheDay()
+
+        }
     }
 
-    private fun displayImageOfTheDay() {
-        currentJob?.cancel()
-        currentJob = viewModelScope.launch(Dispatchers.IO) {
+    private fun initializeAsteroidList() {
+        loadAsteroids()
+    }
+
+    private fun loadAsteroids() {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
                 asteroidListRepository.getListOfAsteroids()
+                onQueryChanged(AsteroidListFilter.SAVED)
             } catch (e: IOException) {
             }
         }
@@ -67,8 +73,8 @@ class MainViewModel(application: Application) : ViewModel() {
 
     private fun onQueryChanged(filter: AsteroidListFilter) {
         currentJob?.cancel()
-        _status.value = NasaApiStatus.LOADING
         currentJob = viewModelScope.launch(Dispatchers.IO) {
+            delay(7000)
             try {
                 // Using postValue as per suggested below
                 // https://stackoverflow.com/questions/53304347/mutablelivedata-cannot-invoke-setvalue-on-a-background-thread-from-coroutine
@@ -82,6 +88,7 @@ class MainViewModel(application: Application) : ViewModel() {
     }
 
     fun updateAsteroidList(filter: AsteroidListFilter) {
+        _status.value = NasaApiStatus.LOADING
         onQueryChanged(filter)
     }
 
