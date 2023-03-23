@@ -6,7 +6,6 @@ import androidx.work.WorkerParameters
 import com.udacity.asteroidradar.asteroidlist.data.repository.AsteroidListRepositoryImpl
 import com.udacity.asteroidradar.common.database.getDatabase
 import com.udacity.asteroidradar.common.network.NasaApi
-import com.udacity.asteroidradar.pictureoftheday.data.repository.PictureOfTheDayRepositoryImpl
 import retrofit2.HttpException
 
 /*
@@ -37,10 +36,8 @@ class RefreshDataWorker(appContext: Context, params: WorkerParameters) :
         val nasaApiService = NasaApi.retrofitService
 
         val repository = AsteroidListRepositoryImpl(database, nasaApiService)
-        val pictureRepository = PictureOfTheDayRepositoryImpl(database, nasaApiService)
         return try {
-            repository.getListOfAsteroids()
-            pictureRepository.getPictureOfTheDay()
+            repository.getNextSevenDaysAsteroids()
             Result.success()
         } catch (e: HttpException) {
             Result.failure()

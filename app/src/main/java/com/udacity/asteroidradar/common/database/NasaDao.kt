@@ -3,6 +3,7 @@ package com.udacity.asteroidradar.common.database
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 
 @Dao
@@ -20,11 +21,14 @@ interface NasaDao {
     @Query("DELETE FROM asteroid")
     fun clearAsteroid()
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAsteroids(asteroids: List<DatabaseAsteroid>)
 
     @Query("SELECT * FROM asteroid ORDER BY closeApproachDate DESC")
     fun getAsteroids(): List<DatabaseAsteroid>
+
+    @Query("SELECT * FROM asteroid ORDER BY closeApproachDate DESC")
+    fun getLiveAsteroids(): LiveData<List<DatabaseAsteroid>>
 
     @Query("SELECT * FROM asteroid where closeApproachDate IN (:days) ORDER BY closeApproachDate DESC")
     fun getAsteroidsInDays(days: List<String>): List<DatabaseAsteroid>

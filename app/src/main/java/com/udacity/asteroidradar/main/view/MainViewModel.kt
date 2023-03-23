@@ -1,9 +1,9 @@
 package com.udacity.asteroidradar.main.view
 
 import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.udacity.asteroidradar.asteroid.domain.model.Asteroid
 import com.udacity.asteroidradar.asteroidlist.data.repository.AsteroidListFilter
@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
 import java.io.IOException
 
 enum class NasaApiStatus { LOADING, ERROR, DONE }
-class MainViewModel(application: Application) : ViewModel() {
+class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val database = getDatabase(application)
     private val nasaApiService = NasaApi.retrofitService
@@ -29,10 +29,7 @@ class MainViewModel(application: Application) : ViewModel() {
     private val asteroidListRepository = AsteroidListRepositoryImpl(database, nasaApiService)
 
     val pictureOfTheDay = pictureOfTheDayRepository.pictureOfTheDay
-
-    private var _listOfAsteroids = MutableLiveData<List<Asteroid>>()
-    val listOfAsteroids: LiveData<List<Asteroid>>
-        get() = _listOfAsteroids
+    val listOfAsteroids = asteroidListRepository.listOfAsteroids
 
     private val _navigateToAsteroid = MutableLiveData<Asteroid>()
     val navigateToAsteroid: LiveData<Asteroid>
@@ -53,20 +50,17 @@ class MainViewModel(application: Application) : ViewModel() {
     private fun initializePictureOfTheDay() {
         viewModelScope.launch {
             pictureOfTheDayRepository.getPictureOfTheDay()
-
         }
     }
 
     private fun initializeAsteroidList() {
-        loadAsteroids()
-    }
-
-    private fun loadAsteroids() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 asteroidListRepository.getListOfAsteroids()
-                onQueryChanged(AsteroidListFilter.SAVED)
+                delay(2000)
+                _status.postValue(NasaApiStatus.DONE)
             } catch (e: IOException) {
+                _status.postValue(NasaApiStatus.DONE)
             }
         }
     }
@@ -74,14 +68,13 @@ class MainViewModel(application: Application) : ViewModel() {
     private fun onQueryChanged(filter: AsteroidListFilter) {
         currentJob?.cancel()
         currentJob = viewModelScope.launch(Dispatchers.IO) {
-            delay(7000)
             try {
                 // Using postValue as per suggested below
                 // https://stackoverflow.com/questions/53304347/mutablelivedata-cannot-invoke-setvalue-on-a-background-thread-from-coroutine
-                _listOfAsteroids.postValue(asteroidListRepository.getFilteredList(filter))
+                asteroidListRepository.getFilteredList(filter)
+                delay(1000)
                 _status.postValue(NasaApiStatus.DONE)
             } catch (e: IOException) {
-                _listOfAsteroids.postValue(listOf())
                 _status.postValue(NasaApiStatus.DONE)
             }
         }

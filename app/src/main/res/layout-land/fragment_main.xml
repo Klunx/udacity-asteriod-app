@@ -25,8 +25,7 @@
             android:layout_height="match_parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:setDescriptionFromPictureOfTheDay="@{viewModel.pictureOfTheDay}">
+            app:layout_constraintTop_toTopOf="parent" >
 
             <ImageView
                 android:id="@+id/activity_main_image_of_the_day"

@@ -1,13 +1,13 @@
 package com.udacity.asteroidradar.main.view
 
 import android.view.View
-import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
+import com.udacity.asteroidradar.Constants.EXCEPTED_FORMAT
 import com.udacity.asteroidradar.R
 import com.udacity.asteroidradar.asteroid.domain.model.Asteroid
 import com.udacity.asteroidradar.pictureoftheday.domain.model.PictureOfDay
@@ -16,14 +16,11 @@ import com.udacity.asteroidradar.pictureoftheday.domain.model.PictureOfDay
 fun ImageView.setPictureOfTheDay(data: PictureOfDay?) {
     // https://www.tutorialspoint.com/how-do-i-load-an-image-by-url-using-picasso-library-on-kotlin
     data?.let {
-        Picasso.with(context).load(it.url).into(this)
-    }
-}
-
-@BindingAdapter("setDescriptionFromPictureOfTheDay")
-fun FrameLayout.setDescriptionFromPictureOfTheDay(data: PictureOfDay?) {
-    data?.let {
-        contentDescription = String.format(context.getString(R.string.nasa_picture_of_day_content_description_format), it.title)
+        if (it.mediaType.lowercase() != EXCEPTED_FORMAT) {
+            Picasso.with(context).load(it.url).into(this)
+        }
+        contentDescription =
+            String.format(context.getString(R.string.nasa_picture_of_day_content_description_format), it.title)
     }
 }
 
