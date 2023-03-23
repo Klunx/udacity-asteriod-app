@@ -5,7 +5,6 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.udacity.asteroidradar.Constants.BASE_URL
 import com.udacity.asteroidradar.pictureoftheday.data.model.DataPictureOfDay
-import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
@@ -35,7 +34,11 @@ interface NasaApiService {
     suspend fun getPictureOfTheDay(@Query("api_key") apiKey: String): DataPictureOfDay
 
     @GET("neo/rest/v1/feed")
-    fun getListOfAsteroids(@Query("start_date") startDate: String,@Query("end_date") endDate: String,@Query("api_key") apiKey: String): Call<String>
+    suspend fun getListOfAsteroids(
+        @Query("start_date") startDate: String,
+        @Query("end_date") endDate: String,
+        @Query("api_key") apiKey: String
+    ): String
 }
 
 object NasaApi {

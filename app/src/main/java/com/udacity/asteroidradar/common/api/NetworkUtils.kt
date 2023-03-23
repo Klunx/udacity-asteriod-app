@@ -9,13 +9,11 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
-fun parseAsteroidsJsonResult(jsonResult: JSONObject): ArrayList<DataAsteroid> {
+fun parseAsteroidsJsonResult(jsonResult: JSONObject, formattedDates: ArrayList<String>): ArrayList<DataAsteroid> {
     val nearEarthObjectsJson = jsonResult.getJSONObject("near_earth_objects")
-
     val asteroidList = ArrayList<DataAsteroid>()
 
-    val nextSevenDaysFormattedDates = getNextSevenDaysFormattedDates()
-    for (formattedDate in nextSevenDaysFormattedDates) {
+    for (formattedDate in formattedDates) {
         if (nearEarthObjectsJson.has(formattedDate)) {
             val dateAsteroidJsonArray = nearEarthObjectsJson.getJSONArray(formattedDate)
 
@@ -36,8 +34,10 @@ fun parseAsteroidsJsonResult(jsonResult: JSONObject): ArrayList<DataAsteroid> {
                 val isPotentiallyHazardous = asteroidJson
                     .getBoolean("is_potentially_hazardous_asteroid")
 
-                val asteroid = DataAsteroid(id, codename, formattedDate, absoluteMagnitude,
-                    estimatedDiameter, relativeVelocity, distanceFromEarth, isPotentiallyHazardous)
+                val asteroid = DataAsteroid(
+                    id, codename, formattedDate, absoluteMagnitude,
+                    estimatedDiameter, relativeVelocity, distanceFromEarth, isPotentiallyHazardous
+                )
                 asteroidList.add(asteroid)
             }
         }
@@ -47,7 +47,7 @@ fun parseAsteroidsJsonResult(jsonResult: JSONObject): ArrayList<DataAsteroid> {
 }
 
 @SuppressLint("WeekBasedYear")
-fun getNextSevenDaysFormattedDates(): ArrayList<String> {
+fun getSevenDaysFormattedDates(): ArrayList<String> {
     val formattedDateList = ArrayList<String>()
 
     val calendar = Calendar.getInstance()
@@ -62,5 +62,39 @@ fun getNextSevenDaysFormattedDates(): ArrayList<String> {
         calendar.add(Calendar.DAY_OF_YEAR, 1)
     }
 
+    return formattedDateList
+}
+
+@SuppressLint("WeekBasedYear")
+fun getNextSevenDaysFormattedDates(): ArrayList<String> {
+    val formattedDateList = ArrayList<String>()
+
+    val calendar = Calendar.getInstance()
+    calendar.add(Calendar.DAY_OF_YEAR, 1)
+    for (i in 0..Constants.DEFAULT_END_DATE_DAYS) {
+        val currentTime = calendar.time
+        val dateFormat = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            SimpleDateFormat(Constants.API_QUERY_DATE_FORMAT, Locale.getDefault())
+        } else {
+            TODO("VERSION.SDK_INT < N")
+        }
+        formattedDateList.add(dateFormat.format(currentTime))
+        calendar.add(Calendar.DAY_OF_YEAR, 1)
+    }
+
+    return formattedDateList
+}
+
+fun getTodayAsAnArray(): ArrayList<String> {
+    val formattedDateList = ArrayList<String>()
+    val calendar = Calendar.getInstance()
+    val currentTime = calendar.time
+    val dateFormat = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        SimpleDateFormat(Constants.API_QUERY_DATE_FORMAT, Locale.getDefault())
+    } else {
+        TODO("VERSION.SDK_INT < N")
+    }
+    val today = dateFormat.format(currentTime)
+    formattedDateList.add(today)
     return formattedDateList
 }

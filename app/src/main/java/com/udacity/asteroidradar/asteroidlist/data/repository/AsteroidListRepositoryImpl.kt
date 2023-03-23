@@ -1,27 +1,24 @@
 package com.udacity.asteroidradar.asteroidlist.data.repository
 
 import android.annotation.SuppressLint
-import android.os.Build
 import android.util.Log
-import com.udacity.asteroidradar.Constants
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.udacity.asteroidradar.Constants.API_KEY
-import com.udacity.asteroidradar.Constants.API_QUERY_DATE_FORMAT
 import com.udacity.asteroidradar.asteroid.domain.model.Asteroid
 import com.udacity.asteroidradar.asteroidlist.data.model.mapper.toDatabaseModel
 import com.udacity.asteroidradar.asteroidlist.domain.mapper.toDomainModel
 import com.udacity.asteroidradar.asteroidlist.domain.repository.AsteroidListRepository
 import com.udacity.asteroidradar.common.api.getNextSevenDaysFormattedDates
+import com.udacity.asteroidradar.common.api.getTodayAsAnArray
 import com.udacity.asteroidradar.common.api.parseAsteroidsJsonResult
 import com.udacity.asteroidradar.common.database.NasaDatabase
 import com.udacity.asteroidradar.common.database.mapper.toDomainModel
 import com.udacity.asteroidradar.common.network.NasaApiService
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import org.json.JSONObject
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -38,79 +35,74 @@ class AsteroidListRepositoryImpl(
 
     private val TAG = "AsteroidListRepositoryImpl"
 
+    private var _listOfAsteroids = MutableLiveData<List<Asteroid>>()
+    override val listOfAsteroids: LiveData<List<Asteroid>>
+        get() = _listOfAsteroids
+
     override suspend fun getListOfAsteroids() {
-        val nextSevenDaysFormattedDates = getNextSevenDaysFormattedDates()
-        withContext(Dispatchers.IO) {
-            nasaApiService.getListOfAsteroids(nextSevenDaysFormattedDates.first(), nextSevenDaysFormattedDates.last(), API_KEY)
-                .enqueue(object : Callback<String> {
-                    override fun onResponse(call: Call<String>, response: Response<String>) {
-                        response.body()?.let {
-                            val listDataAsteroid = parseAsteroidsJsonResult(JSONObject(it)).toDomainModel()
-                            // Having issues saying this was running in the main thread I have sent it in another thread.
-                            Thread {
-                                database.nasaDao.clearAsteroid()
-                                database.nasaDao.insertAsteroids(listDataAsteroid.toDatabaseModel())
-                            }.start()
-                        }
-                    }
+        // I used this approach to remove the enqueue call. I was having a lot of timeouts before.
+        //https://proandroiddev.com/suspend-what-youre-doing-retrofit-has-now-coroutines-support-c65bd09ba067
+        GlobalScope.async(Dispatchers.IO) {
+            retrieveAsteroidList(getTodayAsAnArray())
+        }.await()
+    }
 
-                    @SuppressLint("LongLogTag")
-                    override fun onFailure(call: Call<String>, t: Throwable) {
-                        t.message?.let { Log.e(TAG, it) }
-                    }
-                })
+    override suspend fun getNextSevenDaysAsteroids() {
+        GlobalScope.async(Dispatchers.IO) {
+            retrieveAsteroidList(getNextSevenDaysFormattedDates())
+        }.await()
+    }
 
+    @SuppressLint("LongLogTag")
+    private suspend fun retrieveAsteroidList(nextSevenDaysFormattedDates: ArrayList<String>) {
+        val finished = GlobalScope.async {
+            try {
+                val response = nasaApiService.getListOfAsteroids(nextSevenDaysFormattedDates.first(), nextSevenDaysFormattedDates.last(), API_KEY)
+                val listDataAsteroid = parseAsteroidsJsonResult(JSONObject(response), nextSevenDaysFormattedDates).toDomainModel()
+                database.nasaDao.insertAsteroids(listDataAsteroid.toDatabaseModel())
+                getFilteredList(AsteroidListFilter.SAVED)
+            } catch (e: Exception) {
+                Log.e(TAG, e.message.toString())
+                getFilteredList(AsteroidListFilter.SAVED)
+            }
         }
     }
 
-    fun getFilteredList(filter: AsteroidListFilter): List<Asteroid> {
+    fun getFilteredList(filter: AsteroidListFilter) {
         return loadDatabase(filter)
     }
 
-    private fun loadDatabase(filter: AsteroidListFilter): List<Asteroid> {
-        return when (filter) {
+    private fun loadDatabase(filter: AsteroidListFilter) {
+        when (filter) {
             AsteroidListFilter.SAVED -> getAllAsteroids()
             AsteroidListFilter.WEEK -> getCurrentWeek()
             AsteroidListFilter.TODAY -> getTodayAsteroidsList()
         }
     }
 
-    private fun getAllAsteroids(): List<Asteroid> {
-        return try {
-            database.nasaDao.getAsteroids().toDomainModel()
+    private fun getAllAsteroids() {
+        try {
+            _listOfAsteroids.postValue(database.nasaDao.getAsteroids().toDomainModel())
         } catch (e: Exception) {
             emptyList<Asteroid>()
         }
     }
 
     @SuppressLint("WeekBasedYear")
-    private fun getTodayAsteroidsList(): List<Asteroid> {
-        val calendar = Calendar.getInstance()
-        val currentTime = calendar.time
-        val dateFormat = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            SimpleDateFormat(API_QUERY_DATE_FORMAT, Locale.getDefault())
-        } else {
-            TODO("VERSION.SDK_INT < N")
+    private fun getTodayAsteroidsList() {
+        try {
+            _listOfAsteroids.postValue(database.nasaDao.getAsteroidsInDays(getTodayAsAnArray()).toDomainModel())
+        } catch (e: Exception) {
+            emptyList<Asteroid>()
         }
-        val today = dateFormat.format(currentTime)
-        val days = listOf(today)
-        return database.nasaDao.getAsteroidsInDays(days).toDomainModel()
     }
 
     @SuppressLint("WeekBasedYear")
-    private fun getCurrentWeek(): List<Asteroid> {
-        val formattedDateList = ArrayList<String>()
-        val calendar = Calendar.getInstance()
-        calendar.set(Calendar.DAY_OF_WEEK, calendar.firstDayOfWeek)
-        val dateFormat = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            SimpleDateFormat(API_QUERY_DATE_FORMAT, Locale.getDefault())
-        } else {
-            TODO("VERSION.SDK_INT < N")
+    private fun getCurrentWeek() {
+        try {
+            _listOfAsteroids.postValue(database.nasaDao.getAsteroidsInDays(getNextSevenDaysFormattedDates()).toDomainModel())
+        } catch (e: Exception) {
+            emptyList<Asteroid>()
         }
-        for (i in 0..Constants.DEFAULT_END_DATE_DAYS) {
-            formattedDateList.add(dateFormat.format(calendar.time))
-            calendar.add(Calendar.DAY_OF_YEAR, 1)
-        }
-        return database.nasaDao.getAsteroidsInDays(formattedDateList).toDomainModel()
     }
 }
