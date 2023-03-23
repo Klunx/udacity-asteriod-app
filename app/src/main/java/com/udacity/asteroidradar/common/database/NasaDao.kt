@@ -27,9 +27,6 @@ interface NasaDao {
     @Query("SELECT * FROM asteroid ORDER BY closeApproachDate DESC")
     fun getAsteroids(): List<DatabaseAsteroid>
 
-    @Query("SELECT * FROM asteroid ORDER BY closeApproachDate DESC")
-    fun getLiveAsteroids(): LiveData<List<DatabaseAsteroid>>
-
     @Query("SELECT * FROM asteroid where closeApproachDate IN (:days) ORDER BY closeApproachDate DESC")
     fun getAsteroidsInDays(days: List<String>): List<DatabaseAsteroid>
 }
