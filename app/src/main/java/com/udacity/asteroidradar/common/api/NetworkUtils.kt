@@ -47,31 +47,12 @@ fun parseAsteroidsJsonResult(jsonResult: JSONObject, formattedDates: ArrayList<S
 }
 
 @SuppressLint("WeekBasedYear")
-fun getSevenDaysFormattedDates(): ArrayList<String> {
-    val formattedDateList = ArrayList<String>()
-
-    val calendar = Calendar.getInstance()
-    for (i in 0..Constants.DEFAULT_END_DATE_DAYS) {
-        val currentTime = calendar.time
-        val dateFormat = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            SimpleDateFormat(Constants.API_QUERY_DATE_FORMAT, Locale.getDefault())
-        } else {
-            TODO("VERSION.SDK_INT < N")
-        }
-        formattedDateList.add(dateFormat.format(currentTime))
-        calendar.add(Calendar.DAY_OF_YEAR, 1)
-    }
-
-    return formattedDateList
-}
-
-@SuppressLint("WeekBasedYear")
 fun getNextSevenDaysFormattedDates(): ArrayList<String> {
     val formattedDateList = ArrayList<String>()
 
     val calendar = Calendar.getInstance()
     calendar.add(Calendar.DAY_OF_YEAR, 1)
-    for (i in 0..Constants.DEFAULT_END_DATE_DAYS) {
+    for (i in 1..Constants.DEFAULT_END_DATE_DAYS) {
         val currentTime = calendar.time
         val dateFormat = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             SimpleDateFormat(Constants.API_QUERY_DATE_FORMAT, Locale.getDefault())
