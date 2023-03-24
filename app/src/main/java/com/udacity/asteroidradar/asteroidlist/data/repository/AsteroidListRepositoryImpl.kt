@@ -44,7 +44,7 @@ class AsteroidListRepositoryImpl(
         // I used this approach to remove the enqueue call. I was having a lot of timeouts before.
         //https://proandroiddev.com/suspend-what-youre-doing-retrofit-has-now-coroutines-support-c65bd09ba067
         GlobalScope.async(Dispatchers.IO) {
-            retrieveAsteroidList(getDaysFormattedDates())
+            retrieveAsteroidList(getTodayAsAnArray())
         }.await()
     }
 
