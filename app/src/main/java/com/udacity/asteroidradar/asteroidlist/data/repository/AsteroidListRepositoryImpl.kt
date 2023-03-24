@@ -9,6 +9,7 @@ import com.udacity.asteroidradar.asteroid.domain.model.Asteroid
 import com.udacity.asteroidradar.asteroidlist.data.model.mapper.toDatabaseModel
 import com.udacity.asteroidradar.asteroidlist.domain.mapper.toDomainModel
 import com.udacity.asteroidradar.asteroidlist.domain.repository.AsteroidListRepository
+import com.udacity.asteroidradar.common.api.getDaysFormattedDates
 import com.udacity.asteroidradar.common.api.getNextSevenDaysFormattedDates
 import com.udacity.asteroidradar.common.api.getTodayAsAnArray
 import com.udacity.asteroidradar.common.api.parseAsteroidsJsonResult
@@ -18,9 +19,9 @@ import com.udacity.asteroidradar.common.network.NasaApiService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import org.json.JSONObject
 import java.util.*
-import kotlin.collections.ArrayList
 
 enum class AsteroidListFilter(val value: String) {
     WEEK("week"),
@@ -43,7 +44,7 @@ class AsteroidListRepositoryImpl(
         // I used this approach to remove the enqueue call. I was having a lot of timeouts before.
         //https://proandroiddev.com/suspend-what-youre-doing-retrofit-has-now-coroutines-support-c65bd09ba067
         GlobalScope.async(Dispatchers.IO) {
-            retrieveAsteroidList(getTodayAsAnArray())
+            retrieveAsteroidList(getDaysFormattedDates())
         }.await()
     }
 
@@ -54,11 +55,12 @@ class AsteroidListRepositoryImpl(
     }
 
     @SuppressLint("LongLogTag")
-    private suspend fun retrieveAsteroidList(nextSevenDaysFormattedDates: ArrayList<String>) {
+    private suspend fun retrieveAsteroidList(daysFormattedDates: ArrayList<String>) {
         val finished = GlobalScope.async {
             try {
-                val response = nasaApiService.getListOfAsteroids(nextSevenDaysFormattedDates.first(), nextSevenDaysFormattedDates.last(), API_KEY)
-                val listDataAsteroid = parseAsteroidsJsonResult(JSONObject(response), nextSevenDaysFormattedDates).toDomainModel()
+                val response = nasaApiService.getListOfAsteroids(daysFormattedDates.first(), daysFormattedDates.last(), API_KEY)
+                delay(10000L)
+                val listDataAsteroid = parseAsteroidsJsonResult(JSONObject(response), daysFormattedDates).toDomainModel()
                 database.nasaDao.insertAsteroids(listDataAsteroid.toDatabaseModel())
                 getFilteredList(AsteroidListFilter.SAVED)
             } catch (e: Exception) {
