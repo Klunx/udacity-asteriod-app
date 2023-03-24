@@ -57,7 +57,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 asteroidListRepository.getListOfAsteroids()
-                delay(2000)
+                delay(5000)
                 _status.postValue(NasaApiStatus.DONE)
             } catch (e: IOException) {
                 _status.postValue(NasaApiStatus.DONE)
